@@ -12,8 +12,9 @@
 #include "FreeRTOS.h"
 #include "queue.h"
 
-xQueueHandle voltageBuffer;
-xQueueHandle currentBuffer;
+xQueueHandle amplQueue;
+xQueueHandle minAmplQueue;
+
 
 void vUart(void *pvParameters);
 

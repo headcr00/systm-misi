@@ -53,8 +53,8 @@ void uart_init(void) {
 	USART_Init(USART3, &usart);
 	USART_Cmd(USART3, ENABLE);
 
-	voltageBuffer = xQueueCreate(10, 4);
-	currentBuffer = xQueueCreate(10, 4);
+	amplQueue = xQueueCreate(10, 4);
+	minAmplQueue= xQueueCreate(10, 4);
 
 }
 
@@ -64,8 +64,8 @@ void vUart(void *pvParameters) {
 	uint16_t currentValue;
 	uart_init();
 	for (;;) {
-			xQueueReceive( currentBuffer, &currentValue, portMAX_DELAY );
-			xQueueReceive( voltageBuffer, &voltageValue, portMAX_DELAY );
+			xQueueReceive( amplQueue, &currentValue, portMAX_DELAY );
+			xQueueReceive( minAmplQueue, &voltageValue, portMAX_DELAY );
 			printf("%i %i\r", (uint32_t) currentValue, (uint32_t)voltageValue);
 	}
 }
