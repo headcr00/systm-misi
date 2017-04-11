@@ -49,8 +49,6 @@ int main(void) {
 }
 void vApplicationIdleHook( void )
 {
-	GPIO_SetBits(GPIOC, GPIO_Pin_9);
-	GPIO_ResetBits(GPIOC, GPIO_Pin_9);
 }
 //#pragma GCC diagnostic pop
 
