@@ -15,18 +15,20 @@
 #include "math.h"
 #include "stdio.h"
 #define ADC1_DR_Address ((uint32_t)0x4001244C)
-#define MAXCHANNELS 2
+#define MAXCHANNELS 3
+#define ARRAYSIZE 128
+#define REFERENCECHANNEL 2
 
 void init_adc(void);
 uint16_t search_max(uint16_t * buffer, uint16_t len, uint8_t channel);
 uint16_t search_min(uint16_t * buffer, uint16_t len, uint8_t channel);
 uint16_t search_max_array(uint16_t * buffer, uint16_t len);
 uint16_t search_min_array(uint16_t * buffer, uint16_t len);
-
+uint16_t median(uint16_t * buffer, uint16_t len, uint8_t channel);
 void reject_filter(uint16_t * buffer, uint16_t * outbuffer, uint16_t len, uint8_t channel);
 
-uint16_t ADCConvertedValue[256] = {0};
-uint16_t ADCFiltered50[256] = {0};
+uint16_t ADCConvertedValue[ARRAYSIZE * MAXCHANNELS] = {0};
+uint16_t ADCFiltered50[ARRAYSIZE] = {0};
 
 void vADC(void *pvParameters)
 {
@@ -36,37 +38,48 @@ void vADC(void *pvParameters)
 	uint32_t dcval = 0;
 	uint32_t dcfiltval = 0;
 	uint32_t amplfilt = 0;
+	uint32_t vref = 0;
+	uint16_t datalength = 0;
+	datalength = sizeof(ADCConvertedValue)/2;
 	init_adc();
 	for(;;)
 	{
-
-		/*while (DMA_GetFlagStatus(DMA1_FLAG_TC1) == RESET )
-		{
-			taskYIELD();
-		}
-		DMA_ClearFlag(DMA1_FLAG_TC1);
-		TIM_Cmd(TIM2, DISABLE);*/
-
 		xSemaphoreTake(xMeasureToggle, portMAX_DELAY);
+		//Measure reference voltage
+		reject_filter(ADCConvertedValue, ADCFiltered50, datalength, REFERENCECHANNEL);
+		//Search max and min from the middle of array, because of filter characteristics
+		maxampl = search_max_array(&(*(ADCFiltered50+ARRAYSIZE/2)), ARRAYSIZE/2);
+		minampl = search_min_array(&(*(ADCFiltered50+ARRAYSIZE/2)), ARRAYSIZE/2);
+		amplfilt = maxampl-minampl;
+		//Measure effective ripple value
+		vref = (uint32_t)((float)minampl + (float)(amplfilt)/sqrt(2.0));
 
 
 		for (uint8_t i = 0; i < MAXCHANNELS; i++){
-			maxampl = search_max(ADCConvertedValue, 256, i);
-			minampl = search_min(ADCConvertedValue, 256, i);
+
+			maxampl = search_max(ADCConvertedValue, datalength, i);
+			minampl = search_min(ADCConvertedValue, datalength, i);
 			ampl = maxampl-minampl;
 
 			dcval = (uint32_t)((float)minampl + (float)ampl/sqrt(2.0));
-			ampl = ampl * 3331/0xfff;
-			dcval = dcval * 3331/0xfff;
+			if (i == REFERENCECHANNEL)
+				{
+				ampl = ampl * 3331 / 0xFFF;
+				dcval = dcval * 3331 / 0xFFF;
+				printf("REF:AMP:%u;DCV:%u\n\r", ampl, dcval);
+				break;
+				}
+			ampl = ampl * 2500/vref;
+			dcval = dcval * 2500/vref;
 
-			reject_filter(ADCConvertedValue, ADCFiltered50, 256, i);
+			reject_filter(ADCConvertedValue, ADCFiltered50, datalength, i);
 
-			maxampl = search_max_array(&(*(ADCFiltered50+64)), 64);
-			minampl = search_min_array(&(*(ADCFiltered50+64)), 64);
+			maxampl = search_max_array(&(*(ADCFiltered50+ARRAYSIZE/2)), ARRAYSIZE/2);
+			minampl = search_min_array(&(*(ADCFiltered50+ARRAYSIZE/2)), ARRAYSIZE/2);
 			amplfilt = maxampl-minampl;
 			dcfiltval = (uint32_t)((float)minampl + (float)(amplfilt)/sqrt(2.0));
-			amplfilt = amplfilt * 3331/0xfff;
-			dcfiltval = dcfiltval * 3331/0xfff;
+			amplfilt = amplfilt * 2500/vref;
+			dcfiltval = dcfiltval * 2500/vref;
 
 			printf("CH%u:AMP:%u;DCV:%u;FAMP:%u;FDC:%u\n\r",i,ampl, dcval,amplfilt,dcfiltval);
 		}
@@ -74,13 +87,25 @@ void vADC(void *pvParameters)
 		minampl = 0;
 		ampl = 0;
 		dcval = 0;
+		dcfiltval =0;
+		vref = 0;
 		TIM_Cmd(TIM2, ENABLE);
 		xSemaphoreGive(xMeasureToggle);
 
-		vTaskDelay(300);
+		vTaskDelay(1000);
 	}
 }
-
+uint16_t median(uint16_t * buffer, uint16_t len, uint8_t channel)
+{
+	uint16_t retval = 0;
+	for (uint16_t i = channel; i < len; i = i + MAXCHANNELS)
+	{
+		if (i >= len)
+				break;
+			retval = (retval + *(buffer + i))/2;
+	}
+	return retval;
+}
 uint16_t search_max(uint16_t * buffer, uint16_t len, uint8_t channel)
 {
 	/* returns maximum value of array */
@@ -168,7 +193,7 @@ void init_adc(void)
 	//ADC Input PC4
 	gpio.GPIO_Mode = GPIO_Mode_AIN;
 	gpio.GPIO_Speed = GPIO_Speed_50MHz;
-	gpio.GPIO_Pin = GPIO_Pin_0 | GPIO_Pin_1;
+	gpio.GPIO_Pin = GPIO_Pin_0 | GPIO_Pin_1 | GPIO_Pin_4;
 	GPIO_Init(GPIOA, &gpio);
 
 	DMA_InitTypeDef dma1;
@@ -177,7 +202,7 @@ void init_adc(void)
 	dma1.DMA_PeripheralBaseAddr = ADC1_DR_Address;
 	dma1.DMA_MemoryBaseAddr = (uint32_t) &ADCConvertedValue;
 	dma1.DMA_DIR = DMA_DIR_PeripheralSRC;
-	dma1.DMA_BufferSize = 256;//sizeof(ADCConvertedValue)/2;
+	dma1.DMA_BufferSize = ARRAYSIZE * MAXCHANNELS;//sizeof(ADCConvertedValue)/2;
 	dma1.DMA_PeripheralInc = DMA_PeripheralInc_Disable;
 	dma1.DMA_MemoryInc = DMA_MemoryInc_Enable;
 	dma1.DMA_PeripheralDataSize = DMA_PeripheralDataSize_HalfWord;
@@ -217,12 +242,13 @@ void init_adc(void)
 	adc.ADC_ContinuousConvMode = DISABLE;
 	adc.ADC_ExternalTrigConv = ADC_ExternalTrigConv_T2_CC2;
 	adc.ADC_DataAlign = ADC_DataAlign_Right;
-	adc.ADC_NbrOfChannel = 2;
+	adc.ADC_NbrOfChannel = 3;
 	ADC_Init(ADC1, &adc);
 
 	ADC_RegularChannelConfig(ADC1, ADC_Channel_0, 1, ADC_SampleTime_13Cycles5);
 	ADC_RegularChannelConfig(ADC1, ADC_Channel_1, 2, ADC_SampleTime_13Cycles5);
-
+	ADC_RegularChannelConfig(ADC1, ADC_Channel_4, 3, ADC_SampleTime_13Cycles5);
+//ADC_RegularChannelConfig(ADC1, ADC_Channel_Vrefint, 4, ADC_SampleTime_13Cycles5);
 	ADC_DMACmd(ADC1, ENABLE);
 
 	ADC_ExternalTrigConvCmd(ADC1, ENABLE);
