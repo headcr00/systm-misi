@@ -11,25 +11,26 @@
 #include "task.h"
 #include "task_uart.h"
 #include "stdio.h"
-
-#ifdef __GNUC__
-  /* With GCC/RAISONANCE, small printf (option LD Linker->Libraries->Small printf
-     set to 'Yes') calls __io_putchar() */
-  #define PUTCHAR_PROTOTYPE int __io_putchar(int ch)
-#else
-  #define PUTCHAR_PROTOTYPE int fputc(int ch, FILE *f)
-#endif /* __GNUC__ */
+#include "semphr.h"
+#include "stdlib.h"
+#define UART_RXDR 0x40004804
+#define UART_TXDR 0x40004804
+char rxbuffer[12] = {};
+uint8_t UARTTXBusyFlag = 0;
 
 
-void uart_init(void);
 
 void uart_init(void) {
 	GPIO_InitTypeDef gpio;
 	USART_InitTypeDef usart;
+	DMA_InitTypeDef dma1;
+	NVIC_InitTypeDef nvic;
 
 	RCC_APB2PeriphClockCmd(
 	RCC_APB2Periph_GPIOC | RCC_APB2Periph_AFIO, ENABLE);
 	RCC_APB1PeriphClockCmd(RCC_APB1Periph_USART3, ENABLE);
+	RCC_AHBPeriphClockCmd(RCC_AHBPeriph_DMA1, ENABLE);
+
 	//USART TX
 	gpio.GPIO_Mode = GPIO_Mode_AF_PP;
 	gpio.GPIO_Speed = GPIO_Speed_50MHz;
@@ -44,45 +45,88 @@ void uart_init(void) {
 	GPIO_PinRemapConfig(GPIO_PartialRemap_USART3, ENABLE);
 
 	usart.USART_BaudRate = 115200;
-	usart.USART_WordLength = USART_WordLength_8b;
+	usart.USART_WordLength = USART_WordLength_9b;
 	usart.USART_StopBits = USART_StopBits_1;
 	usart.USART_Parity = USART_Parity_No;
 	usart.USART_HardwareFlowControl = USART_HardwareFlowControl_None;
 	usart.USART_Mode = USART_Mode_Rx | USART_Mode_Tx;
-
+	USART_ITConfig(USART3,USART_IT_RXNE,ENABLE);
+	NVIC_EnableIRQ(USART3_IRQn);
 	USART_Init(USART3, &usart);
+	USART_DMACmd(USART3, USART_DMAReq_Rx , ENABLE);
 	USART_Cmd(USART3, ENABLE);
 
-	amplQueue = xQueueCreate(10, 4);
-	minAmplQueue= xQueueCreate(10, 4);
+	DMA_DeInit(DMA1_Channel3);
+	dma1.DMA_PeripheralBaseAddr = UART_RXDR;
+	dma1.DMA_MemoryBaseAddr = (uint32_t) &rxbuffer;
+	dma1.DMA_DIR = DMA_DIR_PeripheralSRC;
+	dma1.DMA_BufferSize = sizeof(rxbuffer);
+	dma1.DMA_PeripheralInc = DMA_PeripheralInc_Disable;
+	dma1.DMA_MemoryInc = DMA_MemoryInc_Enable;
+	dma1.DMA_PeripheralDataSize = DMA_MemoryDataSize_Byte;
+	dma1.DMA_MemoryDataSize = DMA_MemoryDataSize_Byte;
+	dma1.DMA_Mode = DMA_Mode_Circular;
+	dma1.DMA_Priority = DMA_Priority_Medium;
+	dma1.DMA_M2M = DMA_M2M_Disable;
+	DMA_Init(DMA1_Channel3, &dma1);
+	DMA_Cmd(DMA1_Channel3, ENABLE);
 
 }
 
-void vUart(void *pvParameters) {
-	/* TODO: FIFO Queueue */
-	uint16_t voltageValue;
-	uint16_t currentValue;
-	uart_init();
-	for (;;) {
-			xQueueReceive( amplQueue, &currentValue, portMAX_DELAY );
-			xQueueReceive( minAmplQueue, &voltageValue, portMAX_DELAY );
-			printf("%i %i\r", (uint32_t) currentValue, (uint32_t)voltageValue);
+
+
+void SendDMAUART(char * sendbuffer, uint8_t len)
+{
+
+	DMA_InitTypeDef dma1;
+	while (UARTTXBusyFlag == 1);
+	UARTTXBusyFlag = 1;
+
+	USART_DMACmd(USART3, USART_DMAReq_Tx, DISABLE);
+	DMA_Cmd(DMA1_Channel2, DISABLE);
+	dma1.DMA_PeripheralBaseAddr = (uint32_t)&(USART3->DR);
+	dma1.DMA_MemoryBaseAddr = (uint32_t)sendbuffer;
+	dma1.DMA_DIR = DMA_DIR_PeripheralDST;
+	dma1.DMA_BufferSize = len--;
+	dma1.DMA_PeripheralInc = DMA_PeripheralInc_Disable;
+	dma1.DMA_MemoryInc = DMA_MemoryInc_Enable;
+	dma1.DMA_PeripheralDataSize = DMA_MemoryDataSize_Byte;
+	dma1.DMA_MemoryDataSize = DMA_MemoryDataSize_Byte;
+	dma1.DMA_Mode = DMA_Mode_Normal;
+	dma1.DMA_Priority = DMA_Priority_High;
+	dma1.DMA_M2M = DMA_M2M_Disable;
+
+	DMA_Init(DMA1_Channel2, &dma1);
+	DMA_ITConfig(DMA1_Channel2, DMA_IT_TC, ENABLE);
+	NVIC_EnableIRQ(DMA1_Channel2_IRQn);
+	USART_DMACmd(USART3, USART_DMAReq_Tx, ENABLE);
+	DMA_Cmd(DMA1_Channel2, ENABLE);
+
+}
+
+uint8_t TXUARTReady()
+{
+	return UARTTXBusyFlag;
+}
+void USART3_IRQHandler()
+{
+	static uint8_t i = 0;
+
+	if ((USART3->DR) == '!')
+	{
+		i = DMA_GetCurrDataCounter(DMA1_Channel3);
+
 	}
 }
 
-PUTCHAR_PROTOTYPE
+void DMA1_Channel2_IRQHandler()
 {
-  /* Place your implementation of fputc here */
-  /* e.g. write a character to the USART */
-  USART_SendData(USART3, (uint8_t) ch);
+	if (DMA_GetITStatus(DMA1_IT_TC2))
+	{
+		if (USART_GetFlagStatus(USART3,USART_FLAG_TC)!=1)
+			return;
+		DMA_ClearITPendingBit(DMA1_IT_TC2);
+		UARTTXBusyFlag = 0;
 
-  /* Loop until the end of transmission */
-  while (USART_GetFlagStatus(USART3, USART_FLAG_TC) == RESET)
-  {
-	  taskYIELD();
-  }
-
-  return ch;
+	}
 }
-
-

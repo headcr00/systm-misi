@@ -10,6 +10,10 @@
 
 #include "stm32f10x.h"
 #include "FreeRTOS.h"
+//ADC and buffer parameters
+#define MAXCHANNELS 3
+#define ARRAYSIZE 128
+#define REFERENCECHANNEL 2
 
 void vADC(void *pvParameters);
 

@@ -4,7 +4,7 @@
 #include "task.h"
 #include "stdio.h"
 void initMeasure();
-
+uint8_t txbuffer[12];
 void vMeasureTimer (void * pvParameters)
 {
 	uint8_t measure_number = 0;
@@ -17,7 +17,8 @@ void vMeasureTimer (void * pvParameters)
 		case 0:
 			/*Measure Time! Give Semaphore!*/
 			measure_number++;
-			printf("MEAS_NO_%u\r", measure_number);
+			while(TXUARTReady());
+			SendDMAUART(txbuffer,sprintf(txbuffer,"MEAS_NO_%u\r", measure_number));
 			GPIO_SetBits(GPIOC, GPIO_Pin_5);
 			GPIO_SetBits(GPIOB, GPIO_Pin_8);
 			xSemaphoreGive(xMeasureToggle);
@@ -27,7 +28,8 @@ void vMeasureTimer (void * pvParameters)
 			xSemaphoreTake(xMeasureToggle, portMAX_DELAY);
 			GPIO_ResetBits(GPIOC, GPIO_Pin_5);
 			GPIO_ResetBits(GPIOB, GPIO_Pin_8);
-			printf("ENDM_NO_%u\r", measure_number);
+			while(TXUARTReady());
+			SendDMAUART(txbuffer,sprintf(txbuffer,"ENDM_NO_%u\r", measure_number));
 			break;
 		}
 		iterator = (~iterator & 0x01);

@@ -109,11 +109,11 @@
                                   This value must be a multiple of 0x200. */
 
 
-#define PLL_SOURCE_HSI          // HSI (~8 MHz) used to clock the PLL, and the PLL is used as system clock source
+//#define PLL_SOURCE_HSI          // HSI (~8 MHz) used to clock the PLL, and the PLL is used as system clock source
                                   //When the HSI is used as a PLL clock input, the maximum system clock
                                   //frequency that can be achieved is 64 MHz.
 
-//#define PLL_SOURCE_HSE            // HSE (8MHz) used to clock the PLL, and the PLL is used as system clock source
+#define PLL_SOURCE_HSE            // HSE (8MHz) used to clock the PLL, and the PLL is used as system clock source
 
 //#define PLL_SOURCE_HSE_BYPASS   // HSE bypassed with an external clock (8MHz, coming from ST-Link) used to clock
 

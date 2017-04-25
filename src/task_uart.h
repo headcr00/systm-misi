@@ -11,11 +11,10 @@
 #include "stm32f10x.h"
 #include "FreeRTOS.h"
 #include "queue.h"
+#include "semphr.h"
 
-xQueueHandle amplQueue;
-xQueueHandle minAmplQueue;
-
-
-void vUart(void *pvParameters);
-
+void uart_init(void);
+void SendDMAUART(char * sendbuffer, uint8_t len);
+uint8_t TXUARTReady();
+QueueHandle_t TXDMAQueue;
 #endif /* TASK_UART_H_ */

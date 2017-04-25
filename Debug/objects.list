@@ -30,6 +30,7 @@
 "rtos/src/queue.o"
 "rtos/src/tasks.o"
 "rtos/src/timers.o"
+"src/array_functions.o"
 "src/main.o"
 "src/syscalls.o"
 "src/system_stm32f10x.o"

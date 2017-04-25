@@ -36,11 +36,13 @@ int main(void) {
 	gpio.GPIO_Speed = GPIO_Speed_50MHz;
 	gpio.GPIO_Pin = GPIO_Pin_9;
 	GPIO_Init(GPIOC, &gpio);
-
+	uart_init();
 	SystemInit();
-	xTaskCreate(vUart,"UART", configMINIMAL_STACK_SIZE, NULL, 2, NULL);
+
+
 	xTaskCreate(vADC,"ADC", configMINIMAL_STACK_SIZE, NULL, 1, NULL);
-	xTaskCreate(vMeasureTimer, "MeasT", configMINIMAL_STACK_SIZE, NULL, 2, NULL);
+	xTaskCreate(vMeasureTimer, "MeasT", configMINIMAL_STACK_SIZE, NULL, 1, NULL);
+	//xTaskCreate(vUARTSender, "Uart", configMINIMAL_STACK_SIZE, NULL, 2, NULL);
 	vTaskStartScheduler();
 	// Infinite loop
 	while (1) {

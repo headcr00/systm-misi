@@ -40,7 +40,7 @@ src/task_adc.o: ../src/task_adc.c \
  D:/Work/isol-meter/rev1.0/rev1/rtos/inc/semphr.h \
  D:/Work/isol-meter/rev1.0/rev1/rtos/inc/queue.h ../src/task_adc.h \
  ../src/task_uart.h D:/Work/isol-meter/rev1.0/rev1/rtos/inc/queue.h \
- ../src/task_measuretimer.h
+ ../src/task_measuretimer.h ../src/array_functions.h
 
 D:/Work/isol-meter/rev1.0/rev1/CMSIS/device/stm32f10x.h:
 
@@ -129,3 +129,5 @@ D:/Work/isol-meter/rev1.0/rev1/rtos/inc/queue.h:
 D:/Work/isol-meter/rev1.0/rev1/rtos/inc/queue.h:
 
 ../src/task_measuretimer.h:
+
+../src/array_functions.h:

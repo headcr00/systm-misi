@@ -1,4 +1,4 @@
-src/task_uart.o: ../src/task_uart.c \
+src/array_functions.o: ../src/array_functions.c ../src/array_functions.h \
  D:/Work/isol-meter/rev1.0/rev1/CMSIS/device/stm32f10x.h \
  D:/Work/isol-meter/rev1.0/rev1/CMSIS/core/core_cm3.h \
  D:/Work/isol-meter/rev1.0/rev1/CMSIS/core/core_cmInstr.h \
@@ -28,18 +28,15 @@ src/task_uart.o: ../src/task_uart.c \
  D:/Work/isol-meter/rev1.0/rev1/StdPeriph_Driver/inc/stm32f10x_usart.h \
  D:/Work/isol-meter/rev1.0/rev1/StdPeriph_Driver/inc/stm32f10x_wwdg.h \
  D:/Work/isol-meter/rev1.0/rev1/StdPeriph_Driver/inc/misc.h \
- D:/Work/isol-meter/rev1.0/rev1/rtos/inc/FreeRTOS.h \
+ ../src/task_adc.h D:/Work/isol-meter/rev1.0/rev1/rtos/inc/FreeRTOS.h \
  D:/Work/isol-meter/rev1.0/rev1/rtos/inc/FreeRTOSConfig.h \
  D:/Work/isol-meter/rev1.0/rev1/rtos/inc/projdefs.h \
  D:/Work/isol-meter/rev1.0/rev1/rtos/inc/portable.h \
  D:/Work/isol-meter/rev1.0/rev1/rtos/inc/deprecated_definitions.h \
  D:/Work/isol-meter/rev1.0/rev1/rtos/inc/portmacro.h \
- D:/Work/isol-meter/rev1.0/rev1/rtos/inc/mpu_wrappers.h \
- D:/Work/isol-meter/rev1.0/rev1/rtos/inc/task.h \
- D:/Work/isol-meter/rev1.0/rev1/rtos/inc/list.h ../src/task_uart.h \
- D:/Work/isol-meter/rev1.0/rev1/rtos/inc/queue.h \
- D:/Work/isol-meter/rev1.0/rev1/rtos/inc/semphr.h \
- D:/Work/isol-meter/rev1.0/rev1/rtos/inc/queue.h
+ D:/Work/isol-meter/rev1.0/rev1/rtos/inc/mpu_wrappers.h
+
+../src/array_functions.h:
 
 D:/Work/isol-meter/rev1.0/rev1/CMSIS/device/stm32f10x.h:
 
@@ -99,6 +96,8 @@ D:/Work/isol-meter/rev1.0/rev1/StdPeriph_Driver/inc/stm32f10x_wwdg.h:
 
 D:/Work/isol-meter/rev1.0/rev1/StdPeriph_Driver/inc/misc.h:
 
+../src/task_adc.h:
+
 D:/Work/isol-meter/rev1.0/rev1/rtos/inc/FreeRTOS.h:
 
 D:/Work/isol-meter/rev1.0/rev1/rtos/inc/FreeRTOSConfig.h:
@@ -112,15 +111,3 @@ D:/Work/isol-meter/rev1.0/rev1/rtos/inc/deprecated_definitions.h:
 D:/Work/isol-meter/rev1.0/rev1/rtos/inc/portmacro.h:
 
 D:/Work/isol-meter/rev1.0/rev1/rtos/inc/mpu_wrappers.h:
-
-D:/Work/isol-meter/rev1.0/rev1/rtos/inc/task.h:
-
-D:/Work/isol-meter/rev1.0/rev1/rtos/inc/list.h:
-
-../src/task_uart.h:
-
-D:/Work/isol-meter/rev1.0/rev1/rtos/inc/queue.h:
-
-D:/Work/isol-meter/rev1.0/rev1/rtos/inc/semphr.h:
-
-D:/Work/isol-meter/rev1.0/rev1/rtos/inc/queue.h:
