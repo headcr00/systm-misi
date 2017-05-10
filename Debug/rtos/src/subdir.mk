@@ -6,7 +6,7 @@
 C_SRCS += \
 ../rtos/src/croutine.c \
 ../rtos/src/event_groups.c \
-../rtos/src/heap_2.c \
+../rtos/src/heap_4.c \
 ../rtos/src/list.c \
 ../rtos/src/port.c \
 ../rtos/src/queue.c \
@@ -16,7 +16,7 @@ C_SRCS += \
 OBJS += \
 ./rtos/src/croutine.o \
 ./rtos/src/event_groups.o \
-./rtos/src/heap_2.o \
+./rtos/src/heap_4.o \
 ./rtos/src/list.o \
 ./rtos/src/port.o \
 ./rtos/src/queue.o \
@@ -26,7 +26,7 @@ OBJS += \
 C_DEPS += \
 ./rtos/src/croutine.d \
 ./rtos/src/event_groups.d \
-./rtos/src/heap_2.d \
+./rtos/src/heap_4.d \
 ./rtos/src/list.d \
 ./rtos/src/port.d \
 ./rtos/src/queue.d \

@@ -15,74 +15,56 @@
 #include "math.h"
 #include "stdio.h"
 #include "array_functions.h"
+#include "isol_math.h"
 #define ADC1_DR_Address ((uint32_t)0x4001244C)
 
-void init_adc(void);
 
+uint8_t dma_tc = 0;
 uint16_t ADCConvertedValue[ARRAYSIZE * MAXCHANNELS] = {0};
 uint16_t ADCFiltered50[ARRAYSIZE] = {0};
 char txbuffer[64];
 
 void vADC(void *pvParameters)
 {
-	uint32_t minampl= 0;
-	uint32_t maxampl = 0;
-	uint32_t ampl = 0;
-	uint32_t dcval = 0;
-	uint32_t dcfiltval = 0;
-	uint32_t amplfilt = 0;
-	uint32_t vref = 0;
+	uint32_t adc0;
+	uint32_t adc1;
+	uint32_t ref;
+	uint32_t voltage0;
+	uint32_t voltage1;
+	uint32_t voltageref;
+	uint32_t Rshunt;
+	uint32_t Rbn;
 	uint16_t datalength = 0;
 	uint16_t array_length;
 	datalength = sizeof(ADCConvertedValue)/2;
-	init_adc();
+
 	for(;;)
 	{
 		xSemaphoreTake(xMeasureToggle, portMAX_DELAY);
 		//Measure reference voltage
-		reject_filter(ADCConvertedValue, ADCFiltered50, datalength, REFERENCECHANNEL);
-		//Search max and min from the middle of array, because of filter characteristics
-		maxampl = search_max_array(&(*(ADCFiltered50+100)),28);
-		minampl = search_min_array(&(*(ADCFiltered50+100)),28);
-		amplfilt = maxampl-minampl;
-		//Measure effective ripple value
-		vref = (uint32_t)((float)minampl + (float)(amplfilt)/sqrt(2.0));
 
+		if(dma_tc == 1)
+			{
+			adc0 = median(ADCConvertedValue,datalength,0);
+			adc1 = median(ADCConvertedValue,datalength,1);
+			ref = median(ADCConvertedValue,datalength,2);
+			voltage0 = adc0 * 2506 / ref;
+			voltage1 = adc1 * 2506 / ref;
+			voltageref = ref * 3333 / 4096;
+			Rshunt = calculate_shunt(voltage1);
+			Rbn = calculate_blocknaze(voltage0, voltage1, voltageref);
+			array_length = sprintf(txbuffer,"%u\t%u\t%u\t%u\t%u\t%u\t%u\t%u\t\r\n",adc0,adc1, ref, voltage0, voltage1, voltageref, Rshunt, Rbn);
+			send_to_uart(txbuffer, array_length);
 
-		for (uint8_t i = 0; i < MAXCHANNELS; i++){
+			dma_tc = 0;
+			}
+		TIM_Cmd(TIM2,ENABLE);
 
-			if (i == REFERENCECHANNEL)
-				{
-				amplfilt = amplfilt * 3331 / 0xFFF;
-				vref = vref * 3331 / 0xFFF;
-				while (TXUARTReady());
-				array_length = sprintf(txbuffer,"CH%u:AMP:%u;DCV:%u\r\n", i,amplfilt, vref);
-				SendDMAUART(txbuffer, array_length);
-				break;
-				}
-			reject_filter(ADCConvertedValue, ADCFiltered50, datalength, i);
-
-			maxampl = search_max_array(&(*(ADCFiltered50+100)),28);
-			minampl = search_min_array(&(*(ADCFiltered50+100)),28);
-			amplfilt = maxampl-minampl;
-			dcfiltval = (uint32_t)((float)minampl + (float)(amplfilt)/sqrt(2.0));
-			amplfilt = amplfilt * 2500/vref;
-			dcfiltval = dcfiltval * 2500/vref;
-			while (TXUARTReady());
-			array_length = sprintf(txbuffer,"CH%u:FAMP:%u;FDC:%u\r\n",i,amplfilt,dcfiltval);
-			SendDMAUART(txbuffer, array_length);
-		}
-		maxampl = 0;
-		minampl = 0;
-		ampl = 0;
-		dcval = 0;
-		dcfiltval =0;
-		vref = 0;
-		TIM_Cmd(TIM2, ENABLE);
 		xSemaphoreGive(xMeasureToggle);
 
-		vTaskDelay(10);
+		vTaskDelay(1);
 	}
+	vTaskDelete( NULL );
 }
 
 
@@ -151,9 +133,9 @@ void init_adc(void)
 	adc.ADC_NbrOfChannel = 3;
 	ADC_Init(ADC1, &adc);
 
-	ADC_RegularChannelConfig(ADC1, ADC_Channel_0, 1, ADC_SampleTime_13Cycles5);
-	ADC_RegularChannelConfig(ADC1, ADC_Channel_1, 2, ADC_SampleTime_13Cycles5);
-	ADC_RegularChannelConfig(ADC1, ADC_Channel_4, 3, ADC_SampleTime_71Cycles5);
+	ADC_RegularChannelConfig(ADC1, ADC_Channel_0, 1, ADC_SampleTime_41Cycles5);
+	ADC_RegularChannelConfig(ADC1, ADC_Channel_1, 2, ADC_SampleTime_41Cycles5);
+	ADC_RegularChannelConfig(ADC1, ADC_Channel_4, 3, ADC_SampleTime_41Cycles5);
 //ADC_RegularChannelConfig(ADC1, ADC_Channel_Vrefint, 4, ADC_SampleTime_13Cycles5);
 	ADC_DMACmd(ADC1, ENABLE);
 
@@ -186,6 +168,7 @@ void DMA1_Channel1_IRQHandler()
 	{
 		DMA_ClearITPendingBit(DMA1_IT_TC1);
 		TIM_Cmd(TIM2, DISABLE);
+		dma_tc = 1;
 	}
 }
 

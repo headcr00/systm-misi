@@ -16,5 +16,5 @@
 #define REFERENCECHANNEL 2
 
 void vADC(void *pvParameters);
-
+void init_adc();
 #endif /* TASK_ADC_H_ */

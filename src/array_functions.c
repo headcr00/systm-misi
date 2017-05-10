@@ -10,14 +10,14 @@
 
 uint16_t median(uint16_t * buffer, uint16_t len, uint8_t channel)
 {
-	uint16_t retval = 0;
+	uint32_t retval = 0;
 	for (uint16_t i = channel; i < len; i = i + MAXCHANNELS)
 	{
 		if (i >= len)
 				break;
 			retval = (retval + *(buffer + i))/2;
 	}
-	return retval;
+	return (uint16_t)retval;
 }
 uint16_t search_max(uint16_t * buffer, uint16_t len, uint8_t channel)
 {
@@ -90,3 +90,4 @@ void reject_filter(uint16_t * buffer, uint16_t * outbuffer, uint16_t len, uint8_
 			cnt++;
 		}
 }
+

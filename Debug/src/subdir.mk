@@ -5,6 +5,7 @@
 # Add inputs and outputs from these tool invocations to the build variables 
 C_SRCS += \
 ../src/array_functions.c \
+../src/isol_math.c \
 ../src/main.c \
 ../src/syscalls.c \
 ../src/system_stm32f10x.c \
@@ -14,6 +15,7 @@ C_SRCS += \
 
 OBJS += \
 ./src/array_functions.o \
+./src/isol_math.o \
 ./src/main.o \
 ./src/syscalls.o \
 ./src/system_stm32f10x.o \
@@ -23,6 +25,7 @@ OBJS += \
 
 C_DEPS += \
 ./src/array_functions.d \
+./src/isol_math.d \
 ./src/main.d \
 ./src/syscalls.d \
 ./src/system_stm32f10x.d \

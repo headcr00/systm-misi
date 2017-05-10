@@ -1,6 +1,4 @@
-rtos/src/heap_2.o: ../rtos/src/heap_2.c \
- D:/Work/isol-meter/rev1.0/rev1/rtos/inc/FreeRTOS.h \
- D:/Work/isol-meter/rev1.0/rev1/rtos/inc/FreeRTOSConfig.h \
+src/isol_math.o: ../src/isol_math.c \
  D:/Work/isol-meter/rev1.0/rev1/CMSIS/device/stm32f10x.h \
  D:/Work/isol-meter/rev1.0/rev1/CMSIS/core/core_cm3.h \
  D:/Work/isol-meter/rev1.0/rev1/CMSIS/core/core_cmInstr.h \
@@ -29,18 +27,7 @@ rtos/src/heap_2.o: ../rtos/src/heap_2.c \
  D:/Work/isol-meter/rev1.0/rev1/StdPeriph_Driver/inc/stm32f10x_tim.h \
  D:/Work/isol-meter/rev1.0/rev1/StdPeriph_Driver/inc/stm32f10x_usart.h \
  D:/Work/isol-meter/rev1.0/rev1/StdPeriph_Driver/inc/stm32f10x_wwdg.h \
- D:/Work/isol-meter/rev1.0/rev1/StdPeriph_Driver/inc/misc.h \
- D:/Work/isol-meter/rev1.0/rev1/rtos/inc/projdefs.h \
- D:/Work/isol-meter/rev1.0/rev1/rtos/inc/portable.h \
- D:/Work/isol-meter/rev1.0/rev1/rtos/inc/deprecated_definitions.h \
- D:/Work/isol-meter/rev1.0/rev1/rtos/inc/portmacro.h \
- D:/Work/isol-meter/rev1.0/rev1/rtos/inc/mpu_wrappers.h \
- D:/Work/isol-meter/rev1.0/rev1/rtos/inc/task.h \
- D:/Work/isol-meter/rev1.0/rev1/rtos/inc/list.h
-
-D:/Work/isol-meter/rev1.0/rev1/rtos/inc/FreeRTOS.h:
-
-D:/Work/isol-meter/rev1.0/rev1/rtos/inc/FreeRTOSConfig.h:
+ D:/Work/isol-meter/rev1.0/rev1/StdPeriph_Driver/inc/misc.h
 
 D:/Work/isol-meter/rev1.0/rev1/CMSIS/device/stm32f10x.h:
 
@@ -99,17 +86,3 @@ D:/Work/isol-meter/rev1.0/rev1/StdPeriph_Driver/inc/stm32f10x_usart.h:
 D:/Work/isol-meter/rev1.0/rev1/StdPeriph_Driver/inc/stm32f10x_wwdg.h:
 
 D:/Work/isol-meter/rev1.0/rev1/StdPeriph_Driver/inc/misc.h:
-
-D:/Work/isol-meter/rev1.0/rev1/rtos/inc/projdefs.h:
-
-D:/Work/isol-meter/rev1.0/rev1/rtos/inc/portable.h:
-
-D:/Work/isol-meter/rev1.0/rev1/rtos/inc/deprecated_definitions.h:
-
-D:/Work/isol-meter/rev1.0/rev1/rtos/inc/portmacro.h:
-
-D:/Work/isol-meter/rev1.0/rev1/rtos/inc/mpu_wrappers.h:
-
-D:/Work/isol-meter/rev1.0/rev1/rtos/inc/task.h:
-
-D:/Work/isol-meter/rev1.0/rev1/rtos/inc/list.h:

@@ -13,11 +13,13 @@
 #include "stdio.h"
 #include "semphr.h"
 #include "stdlib.h"
+#include "queue.h"
 #define UART_RXDR 0x40004804
 #define UART_TXDR 0x40004804
 char rxbuffer[12] = {};
 uint8_t UARTTXBusyFlag = 0;
 
+QueueHandle_t sendqueue;
 
 
 void uart_init(void) {
@@ -44,7 +46,7 @@ void uart_init(void) {
 	GPIO_Init(GPIOC, &gpio);
 	GPIO_PinRemapConfig(GPIO_PartialRemap_USART3, ENABLE);
 
-	usart.USART_BaudRate = 115200;
+	usart.USART_BaudRate = 256000;
 	usart.USART_WordLength = USART_WordLength_9b;
 	usart.USART_StopBits = USART_StopBits_1;
 	usart.USART_Parity = USART_Parity_No;
@@ -55,7 +57,7 @@ void uart_init(void) {
 	USART_Init(USART3, &usart);
 	USART_DMACmd(USART3, USART_DMAReq_Rx , ENABLE);
 	USART_Cmd(USART3, ENABLE);
-
+	sendqueue = xQueueCreate(50, sizeof(uint32_t));
 	DMA_DeInit(DMA1_Channel3);
 	dma1.DMA_PeripheralBaseAddr = UART_RXDR;
 	dma1.DMA_MemoryBaseAddr = (uint32_t) &rxbuffer;
@@ -71,9 +73,45 @@ void uart_init(void) {
 	DMA_Init(DMA1_Channel3, &dma1);
 	DMA_Cmd(DMA1_Channel3, ENABLE);
 
+
 }
 
+void send_to_uart(char * buffer, uint16_t len)
+{
+	char * arr;
+	portBASE_TYPE xStatus;
+	if (xQueueIsQueueFullFromISR(sendqueue))
+			return;
+	arr = pvPortMalloc(len+1);
 
+	*arr = len;
+	memcpy((arr+1),buffer,len);
+	xStatus = xQueueSendFromISR(sendqueue, &arr ,0);
+	if( xStatus != pdPASS )
+	{
+		vPortFree(arr);
+		return;
+	}
+}
+
+void vUartTask(void *pvParameters)
+{
+	uint32_t arr2;
+	char *ptr = 0;
+	for(;;)
+	{
+		while (TXUARTReady())
+			vTaskDelay(1);
+		xQueueReceive(sendqueue,&arr2,portMAX_DELAY);
+		ptr = arr2;
+		SendDMAUART((ptr+1), (*ptr)-1);
+		while (TXUARTReady())
+			vTaskDelay(1);
+		vPortFree(ptr);
+
+	}
+	vTaskDelete( NULL );
+}
 
 void SendDMAUART(char * sendbuffer, uint8_t len)
 {

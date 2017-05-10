@@ -1,4 +1,6 @@
-src/task_adc.o: ../src/task_adc.c \
+rtos/src/heap_4.o: ../rtos/src/heap_4.c \
+ D:/Work/isol-meter/rev1.0/rev1/rtos/inc/FreeRTOS.h \
+ D:/Work/isol-meter/rev1.0/rev1/rtos/inc/FreeRTOSConfig.h \
  D:/Work/isol-meter/rev1.0/rev1/CMSIS/device/stm32f10x.h \
  D:/Work/isol-meter/rev1.0/rev1/CMSIS/core/core_cm3.h \
  D:/Work/isol-meter/rev1.0/rev1/CMSIS/core/core_cmInstr.h \
@@ -28,19 +30,17 @@ src/task_adc.o: ../src/task_adc.c \
  D:/Work/isol-meter/rev1.0/rev1/StdPeriph_Driver/inc/stm32f10x_usart.h \
  D:/Work/isol-meter/rev1.0/rev1/StdPeriph_Driver/inc/stm32f10x_wwdg.h \
  D:/Work/isol-meter/rev1.0/rev1/StdPeriph_Driver/inc/misc.h \
- D:/Work/isol-meter/rev1.0/rev1/rtos/inc/FreeRTOS.h \
- D:/Work/isol-meter/rev1.0/rev1/rtos/inc/FreeRTOSConfig.h \
  D:/Work/isol-meter/rev1.0/rev1/rtos/inc/projdefs.h \
  D:/Work/isol-meter/rev1.0/rev1/rtos/inc/portable.h \
  D:/Work/isol-meter/rev1.0/rev1/rtos/inc/deprecated_definitions.h \
  D:/Work/isol-meter/rev1.0/rev1/rtos/inc/portmacro.h \
  D:/Work/isol-meter/rev1.0/rev1/rtos/inc/mpu_wrappers.h \
  D:/Work/isol-meter/rev1.0/rev1/rtos/inc/task.h \
- D:/Work/isol-meter/rev1.0/rev1/rtos/inc/list.h \
- D:/Work/isol-meter/rev1.0/rev1/rtos/inc/semphr.h \
- D:/Work/isol-meter/rev1.0/rev1/rtos/inc/queue.h ../src/task_adc.h \
- ../src/task_uart.h D:/Work/isol-meter/rev1.0/rev1/rtos/inc/queue.h \
- ../src/task_measuretimer.h ../src/array_functions.h ../src/isol_math.h
+ D:/Work/isol-meter/rev1.0/rev1/rtos/inc/list.h
+
+D:/Work/isol-meter/rev1.0/rev1/rtos/inc/FreeRTOS.h:
+
+D:/Work/isol-meter/rev1.0/rev1/rtos/inc/FreeRTOSConfig.h:
 
 D:/Work/isol-meter/rev1.0/rev1/CMSIS/device/stm32f10x.h:
 
@@ -100,10 +100,6 @@ D:/Work/isol-meter/rev1.0/rev1/StdPeriph_Driver/inc/stm32f10x_wwdg.h:
 
 D:/Work/isol-meter/rev1.0/rev1/StdPeriph_Driver/inc/misc.h:
 
-D:/Work/isol-meter/rev1.0/rev1/rtos/inc/FreeRTOS.h:
-
-D:/Work/isol-meter/rev1.0/rev1/rtos/inc/FreeRTOSConfig.h:
-
 D:/Work/isol-meter/rev1.0/rev1/rtos/inc/projdefs.h:
 
 D:/Work/isol-meter/rev1.0/rev1/rtos/inc/portable.h:
@@ -117,19 +113,3 @@ D:/Work/isol-meter/rev1.0/rev1/rtos/inc/mpu_wrappers.h:
 D:/Work/isol-meter/rev1.0/rev1/rtos/inc/task.h:
 
 D:/Work/isol-meter/rev1.0/rev1/rtos/inc/list.h:
-
-D:/Work/isol-meter/rev1.0/rev1/rtos/inc/semphr.h:
-
-D:/Work/isol-meter/rev1.0/rev1/rtos/inc/queue.h:
-
-../src/task_adc.h:
-
-../src/task_uart.h:
-
-D:/Work/isol-meter/rev1.0/rev1/rtos/inc/queue.h:
-
-../src/task_measuretimer.h:
-
-../src/array_functions.h:
-
-../src/isol_math.h:

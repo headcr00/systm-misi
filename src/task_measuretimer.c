@@ -3,7 +3,7 @@
 #include "stm32f10x_conf.h"
 #include "task.h"
 #include "stdio.h"
-void initMeasure();
+
 uint8_t txbuffer[12];
 void vMeasureTimer (void * pvParameters)
 {
@@ -17,8 +17,7 @@ void vMeasureTimer (void * pvParameters)
 		case 0:
 			/*Measure Time! Give Semaphore!*/
 			measure_number++;
-			while(TXUARTReady());
-			SendDMAUART(txbuffer,sprintf(txbuffer,"MEAS_NO_%u\r", measure_number));
+			send_to_uart(txbuffer, sprintf(txbuffer,"ADC0\tADC1\tREF\tV0\tV1\tVREF\tRsh\tRbn\tMEAS:%u\r\n", measure_number));
 			GPIO_SetBits(GPIOC, GPIO_Pin_5);
 			GPIO_SetBits(GPIOB, GPIO_Pin_8);
 			xSemaphoreGive(xMeasureToggle);
@@ -28,13 +27,13 @@ void vMeasureTimer (void * pvParameters)
 			xSemaphoreTake(xMeasureToggle, portMAX_DELAY);
 			GPIO_ResetBits(GPIOC, GPIO_Pin_5);
 			GPIO_ResetBits(GPIOB, GPIO_Pin_8);
-			while(TXUARTReady());
-			SendDMAUART(txbuffer,sprintf(txbuffer,"ENDM_NO_%u\r", measure_number));
+			send_to_uart(txbuffer,sprintf(txbuffer,"ENDM_NO_%u\r\n", measure_number));
 			break;
 		}
 		iterator = (~iterator & 0x01);
 		vTaskDelay(1000);//Ten seconds delay between measurements
 	}
+	vTaskDelete( NULL );
 }
 
 
@@ -51,5 +50,5 @@ void initMeasure()
 	gpio.GPIO_Pin = GPIO_Pin_8;
 	GPIO_Init(GPIOB, &gpio);
 	vSemaphoreCreateBinary( xMeasureToggle );
-	xSemaphoreTake(xMeasureToggle, portMAX_DELAY);
+	//xSemaphoreTake(xMeasureToggle, portMAX_DELAY);
 }

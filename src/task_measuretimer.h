@@ -12,7 +12,7 @@
 #include "FreeRTOS.h"
 #include "semphr.h"
 void vMeasureTimer(void * pvParameters);
-
+void initMeasure();
 xSemaphoreHandle  xMeasureToggle;
 
 #endif /* TASK_MEASURETIMER_H_ */
